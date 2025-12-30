@@ -2,7 +2,9 @@
  * Backend API client for Sheet to Solfa.
  */
 
-const API_BASE = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000") + "/api";
+// Remove trailing slash from URL if present, then add /api
+const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/$/, "");
+const API_BASE = `${baseUrl}/api`;
 
 export interface UploadResponse {
   job_id: string;
