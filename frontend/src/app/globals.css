@@ -1,0 +1,108 @@
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground: #1a1b1e;
+  --background: #fef7f0;
+  --accent: #ec6e25;
+  --accent-dark: #b73f18;
+  --muted: #7b7f88;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+/* Musical staff pattern background */
+.staff-pattern {
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 11px,
+    #e2e3e5 11px,
+    #e2e3e5 12px
+  );
+  background-size: 100% 60px;
+  background-position: 0 10px;
+}
+
+/* Solfa notation styling */
+.solfa-notation {
+  font-family: "JetBrains Mono", monospace;
+  letter-spacing: 0.05em;
+}
+
+.solfa-notation .measure {
+  display: inline-block;
+  padding: 0 0.5rem;
+  border-left: 2px solid currentColor;
+}
+
+.solfa-notation .measure:last-child {
+  border-right: 2px solid currentColor;
+}
+
+/* Upload dropzone styling */
+.dropzone {
+  transition: all 0.3s ease;
+}
+
+.dropzone:hover,
+.dropzone.active {
+  border-color: var(--accent);
+  background-color: rgba(236, 110, 37, 0.05);
+}
+
+/* Progress bar animation */
+.progress-bar {
+  transition: width 0.5s ease-out;
+}
+
+/* Smooth page transitions */
+.page-transition {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Loading spinner */
+.spinner {
+  border: 3px solid rgba(236, 110, 37, 0.2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Button styles */
+.btn-primary {
+  @apply bg-staff-500 hover:bg-staff-600 text-white font-medium py-3 px-6 rounded-lg transition-all duration-200;
+}
+
+.btn-primary:disabled {
+  @apply bg-ink-300 cursor-not-allowed;
+}
+
+.btn-secondary {
+  @apply border-2 border-staff-500 text-staff-600 hover:bg-staff-50 font-medium py-3 px-6 rounded-lg transition-all duration-200;
+}
+
