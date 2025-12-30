@@ -22,7 +22,7 @@ class Settings(BaseSettings):
 
     # API
     api_prefix: str = "/api"
-    cors_origins: list[str] = ["http://localhost:3000"]
+    cors_origins: str = "*"  # Allow all origins, or set specific origins comma-separated
 
     # Gemini AI
     gemini_api_key: str | None = None
