@@ -101,30 +101,21 @@ export default function SolfaDisplay({
   };
   
   const handlePlayAll = async () => {
-    console.log("=== Play All clicked ===");
-    console.log("audioReady:", audioReady);
-    console.log("measures.length:", measures.length);
-    console.log("measures:", measures);
-    
     if (!audioReady) {
       alert("Audio not available in this browser. Please try a modern browser.");
-      console.warn("Audio not available");
       return;
     }
     
     if (measures.length === 0) {
       alert("No measures to play. Please upload a PDF first.");
-      console.warn("No measures to play");
       return;
     }
     
     // Count total notes
     const totalNotes = measures.reduce((sum, m) => sum + m.notes.filter(n => !n.isRest).length, 0);
-    console.log(`Starting playback of ${measures.length} measures with ${totalNotes} notes`);
     
     if (totalNotes === 0) {
       alert("No notes found to play. All measures appear to be rests.");
-      console.warn("No notes to play (all rests)");
       return;
     }
     
@@ -133,29 +124,23 @@ export default function SolfaDisplay({
     setIsPlaying(true);
     
     try {
-      console.log("Resuming audio context...");
       await resumeAudio();
-      console.log("Audio context resumed");
       
       for (let i = 0; i < measures.length; i++) {
         // Check if stop was requested
         if (stopRequestedRef.current) {
-          console.log("Playback stopped by user");
           break;
         }
         
         const measure = measures[i];
         const playableNotes = measure.notes.filter(n => !n.isRest);
-        console.log(`Playing measure ${measure.number} with ${playableNotes.length} playable notes:`, playableNotes.map(n => n.syllable));
         
         setCurrentMeasure(measure.number);
         
         if (playableNotes.length > 0) {
-          await playMeasure(playableNotes, 100); // Slower tempo for testing
+          await playMeasure(playableNotes, 120); // Normal tempo
         }
       }
-      
-      console.log("Playback complete");
     } catch (error) {
       console.error("Playback error:", error);
       alert(`Playback error: ${error instanceof Error ? error.message : String(error)}`);

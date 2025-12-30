@@ -59,12 +59,7 @@ export function playNote(
   volume: number = 0.3,
   waveform: OscillatorType = 'sine'
 ): void {
-  if (frequency === 0) {
-    console.log("Skipping rest (frequency=0)");
-    return; // Don't play rests
-  }
-  
-  console.log(`Playing note: freq=${frequency.toFixed(2)}Hz, duration=${duration.toFixed(2)}s`);
+  if (frequency === 0) return; // Don't play rests
   
   const ctx = getAudioContext();
   const oscillator = ctx.createOscillator();
@@ -95,10 +90,8 @@ export function playSolfaNote(
   durationBeats: number = 1,
   tempo: number = 120
 ): void {
-  console.log(`playSolfaNote: syllable="${syllable}", octave=${octave}, duration=${durationBeats}, tempo=${tempo}`);
   const frequency = solfaToFrequency(syllable, octave);
   const durationSeconds = (durationBeats * 60) / tempo;
-  console.log(`  -> frequency=${frequency}, durationSeconds=${durationSeconds.toFixed(2)}`);
   playNote(frequency, durationSeconds);
 }
 
@@ -112,7 +105,6 @@ export async function playSequence(
   for (const note of notes) {
     // Skip rests
     if (note.isRest || !note.syllable || note.syllable.trim() === '' || note.syllable === '0') {
-      console.log("Skipping rest or invalid note:", note);
       const durationBeats = note.duration || 1;
       const durationMs = (durationBeats * 60 * 1000) / tempo;
       await new Promise(resolve => setTimeout(resolve, durationMs));
@@ -123,7 +115,6 @@ export async function playSequence(
     const durationBeats = note.duration || 1;
     const durationMs = (durationBeats * 60 * 1000) / tempo;
     
-    console.log(`Playing note in sequence: ${note.syllable}`);
     playSolfaNote(note.syllable, octave, durationBeats, tempo);
     
     await new Promise(resolve => setTimeout(resolve, durationMs));
