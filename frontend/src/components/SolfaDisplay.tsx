@@ -47,9 +47,15 @@ export default function SolfaDisplay({
   const [zoom, setZoom] = useState<ZoomLevel>('md');
   const [showLegend, setShowLegend] = useState(true);
   const [animate, setAnimate] = useState(true);
+  const [audioReady, setAudioReady] = useState(false);
   
   // Ref to track stop requests (avoids stale closure issues)
   const stopRequestedRef = useRef(false);
+  
+  // Check audio availability on client only (avoid SSR hydration mismatch)
+  useEffect(() => {
+    setAudioReady(isAudioAvailable());
+  }, []);
   
   // Parse time signature for beats per measure
   const beatsPerMeasure = useMemo(() => {
@@ -91,21 +97,45 @@ export default function SolfaDisplay({
   };
   
   const handlePlayAll = async () => {
-    if (!isAudioAvailable()) return;
+    if (!audioReady) {
+      console.warn("Audio not available");
+      return;
+    }
+    
+    if (measures.length === 0) {
+      console.warn("No measures to play");
+      return;
+    }
+    
+    console.log("Starting playback of", measures.length, "measures");
     
     // Reset stop flag and start playing
     stopRequestedRef.current = false;
     setIsPlaying(true);
-    await resumeAudio();
     
     try {
+      await resumeAudio();
+      
       for (let i = 0; i < measures.length; i++) {
         // Check if stop was requested
-        if (stopRequestedRef.current) break;
+        if (stopRequestedRef.current) {
+          console.log("Playback stopped by user");
+          break;
+        }
         
-        setCurrentMeasure(measures[i].number);
-        await playMeasure(measures[i].notes, 120);
+        const measure = measures[i];
+        console.log(`Playing measure ${measure.number} with ${measure.notes.length} notes:`, measure.notes);
+        
+        setCurrentMeasure(measure.number);
+        
+        if (measure.notes.length > 0) {
+          await playMeasure(measure.notes, 100); // Slower tempo for testing
+        }
       }
+      
+      console.log("Playback complete");
+    } catch (error) {
+      console.error("Playback error:", error);
     } finally {
       setCurrentMeasure(null);
       setIsPlaying(false);
@@ -157,7 +187,7 @@ export default function SolfaDisplay({
         {/* Toolbar */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-ink-100 bg-ink-50 no-print">
           <div className="flex items-center gap-2">
-            {isAudioAvailable() && (
+            {audioReady && (
               <button
                 onClick={isPlaying ? handleStop : handlePlayAll}
                 className="flex items-center gap-2 px-4 py-2 bg-staff-500 text-white rounded-lg hover:bg-staff-600 transition-colors"
