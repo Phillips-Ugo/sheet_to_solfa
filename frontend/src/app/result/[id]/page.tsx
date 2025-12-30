@@ -79,7 +79,7 @@ export default function ResultPage() {
           </div>
         </div>
 
-        {/* Results grid */}
+          {/* Results grid */}
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Solfa display - main content */}
           <div className="lg:col-span-2">
@@ -88,6 +88,7 @@ export default function ResultPage() {
               keySignature={result.key_detected}
               timeSignature={result.time_signature}
               measureCount={result.measure_count}
+              structuredData={result.structured_data}
             />
           </div>
 

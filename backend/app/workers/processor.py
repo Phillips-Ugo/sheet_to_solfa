@@ -218,6 +218,9 @@ class SheetMusicProcessor:
             pdf_path = output_dir / "solfa.pdf"
             self.renderer.render(solfa_result, "pdf", pdf_path)
 
+            # Get structured data for frontend
+            structured_data = self.renderer.get_structured_data(solfa_result)
+
             # Complete
             result_data = {
                 "solfa_text": txt_content if isinstance(txt_content, str) else "",
@@ -227,6 +230,7 @@ class SheetMusicProcessor:
                 "note_count": sum(len(m.notes) for m in solfa_result.measures),
                 "available_formats": ["txt", "json", "pdf"],
                 "output_dir": str(output_dir),
+                "structured_data": structured_data,
             }
 
             await self._update_status(

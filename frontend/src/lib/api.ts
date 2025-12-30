@@ -22,6 +22,29 @@ export interface JobStatus {
   updated_at?: string;
 }
 
+export interface StructuredNote {
+  syllable: string;
+  octave_modifier?: string;
+  duration?: number;
+  is_rest?: boolean;
+  display?: string;
+}
+
+export interface StructuredMeasure {
+  number: number;
+  text?: string;
+  notes: StructuredNote[];
+}
+
+export interface StructuredSolfaData {
+  title?: string;
+  key: string;
+  time_signature: string;
+  measure_count: number;
+  generated_at?: string;
+  measures: StructuredMeasure[];
+}
+
 export interface JobResult {
   solfa_text: string;
   key_detected: string;
@@ -30,6 +53,7 @@ export interface JobResult {
   note_count: number;
   available_formats: string[];
   is_demo?: boolean;
+  structured_data?: StructuredSolfaData;
 }
 
 export interface TextResult {

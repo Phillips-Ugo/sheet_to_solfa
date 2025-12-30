@@ -124,6 +124,22 @@ class OutputRenderer:
         Returns:
             JSON string
         """
+        data = self.get_structured_data(result)
+        
+        if pretty:
+            return json.dumps(data, indent=2, ensure_ascii=False)
+        return json.dumps(data, ensure_ascii=False)
+    
+    def get_structured_data(self, result: SolfaResult) -> dict[str, Any]:
+        """
+        Get structured data representation for frontend consumption.
+        
+        Args:
+            result: The solfa conversion result
+            
+        Returns:
+            Dictionary with structured measure and note data
+        """
         data = {
             "title": result.title,
             "key": result.key,
@@ -150,9 +166,7 @@ class OutputRenderer:
             }
             data["measures"].append(measure_data)
         
-        if pretty:
-            return json.dumps(data, indent=2, ensure_ascii=False)
-        return json.dumps(data, ensure_ascii=False)
+        return data
 
     def render_pdf(
         self,
