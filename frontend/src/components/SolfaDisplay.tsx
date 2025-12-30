@@ -69,11 +69,15 @@ export default function SolfaDisplay({
       return structuredData.measures.map((m) => ({
         number: m.number,
         beatsPerMeasure,
-        notes: m.notes.map((n) => ({
-          syllable: n.display || n.syllable + (n.octave_modifier || ''),
-          duration: n.duration || 1,
-          isRest: n.is_rest || false,
-        })),
+        notes: m.notes.map((n) => {
+          // Use display if available, otherwise construct from syllable + octave_modifier
+          const syllableStr = n.display || (n.syllable + (n.octave_modifier || ''));
+          return {
+            syllable: syllableStr,
+            duration: n.duration || 1,
+            isRest: n.is_rest || false,
+          };
+        }),
       }));
     }
     
@@ -97,24 +101,41 @@ export default function SolfaDisplay({
   };
   
   const handlePlayAll = async () => {
+    console.log("=== Play All clicked ===");
+    console.log("audioReady:", audioReady);
+    console.log("measures.length:", measures.length);
+    console.log("measures:", measures);
+    
     if (!audioReady) {
+      alert("Audio not available in this browser. Please try a modern browser.");
       console.warn("Audio not available");
       return;
     }
     
     if (measures.length === 0) {
+      alert("No measures to play. Please upload a PDF first.");
       console.warn("No measures to play");
       return;
     }
     
-    console.log("Starting playback of", measures.length, "measures");
+    // Count total notes
+    const totalNotes = measures.reduce((sum, m) => sum + m.notes.filter(n => !n.isRest).length, 0);
+    console.log(`Starting playback of ${measures.length} measures with ${totalNotes} notes`);
+    
+    if (totalNotes === 0) {
+      alert("No notes found to play. All measures appear to be rests.");
+      console.warn("No notes to play (all rests)");
+      return;
+    }
     
     // Reset stop flag and start playing
     stopRequestedRef.current = false;
     setIsPlaying(true);
     
     try {
+      console.log("Resuming audio context...");
       await resumeAudio();
+      console.log("Audio context resumed");
       
       for (let i = 0; i < measures.length; i++) {
         // Check if stop was requested
@@ -124,18 +145,20 @@ export default function SolfaDisplay({
         }
         
         const measure = measures[i];
-        console.log(`Playing measure ${measure.number} with ${measure.notes.length} notes:`, measure.notes);
+        const playableNotes = measure.notes.filter(n => !n.isRest);
+        console.log(`Playing measure ${measure.number} with ${playableNotes.length} playable notes:`, playableNotes.map(n => n.syllable));
         
         setCurrentMeasure(measure.number);
         
-        if (measure.notes.length > 0) {
-          await playMeasure(measure.notes, 100); // Slower tempo for testing
+        if (playableNotes.length > 0) {
+          await playMeasure(playableNotes, 100); // Slower tempo for testing
         }
       }
       
       console.log("Playback complete");
     } catch (error) {
       console.error("Playback error:", error);
+      alert(`Playback error: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setCurrentMeasure(null);
       setIsPlaying(false);

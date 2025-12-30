@@ -106,14 +106,24 @@ export function playSolfaNote(
  * Play a sequence of notes
  */
 export async function playSequence(
-  notes: Array<{ syllable: string; octave?: number; duration?: number }>,
+  notes: Array<{ syllable: string; octave?: number; duration?: number; isRest?: boolean }>,
   tempo: number = 120
 ): Promise<void> {
   for (const note of notes) {
+    // Skip rests
+    if (note.isRest || !note.syllable || note.syllable.trim() === '' || note.syllable === '0') {
+      console.log("Skipping rest or invalid note:", note);
+      const durationBeats = note.duration || 1;
+      const durationMs = (durationBeats * 60 * 1000) / tempo;
+      await new Promise(resolve => setTimeout(resolve, durationMs));
+      continue;
+    }
+    
     const octave = note.octave || 4;
     const durationBeats = note.duration || 1;
     const durationMs = (durationBeats * 60 * 1000) / tempo;
     
+    console.log(`Playing note in sequence: ${note.syllable}`);
     playSolfaNote(note.syllable, octave, durationBeats, tempo);
     
     await new Promise(resolve => setTimeout(resolve, durationMs));
