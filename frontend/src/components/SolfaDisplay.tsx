@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
-import { Copy, Check, Play, Pause, ZoomIn, ZoomOut, Printer } from "lucide-react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
+import { Copy, Check, Play, Square, ZoomIn, ZoomOut, Printer } from "lucide-react";
 import MeasureBar, { type MeasureData } from "./solfa/MeasureBar";
 import SolfaLegend from "./solfa/SolfaLegend";
 import { type SolfaNoteData } from "./solfa/SolfaNote";
@@ -48,6 +48,9 @@ export default function SolfaDisplay({
   const [showLegend, setShowLegend] = useState(true);
   const [animate, setAnimate] = useState(true);
   
+  // Ref to track stop requests (avoids stale closure issues)
+  const stopRequestedRef = useRef(false);
+  
   // Parse time signature for beats per measure
   const beatsPerMeasure = useMemo(() => {
     const parts = timeSignature.split('/');
@@ -90,21 +93,27 @@ export default function SolfaDisplay({
   const handlePlayAll = async () => {
     if (!isAudioAvailable()) return;
     
+    // Reset stop flag and start playing
+    stopRequestedRef.current = false;
     setIsPlaying(true);
     await resumeAudio();
     
-    for (let i = 0; i < measures.length; i++) {
-      if (!isPlaying) break;
-      
-      setCurrentMeasure(measures[i].number);
-      await playMeasure(measures[i].notes, 120);
+    try {
+      for (let i = 0; i < measures.length; i++) {
+        // Check if stop was requested
+        if (stopRequestedRef.current) break;
+        
+        setCurrentMeasure(measures[i].number);
+        await playMeasure(measures[i].notes, 120);
+      }
+    } finally {
+      setCurrentMeasure(null);
+      setIsPlaying(false);
     }
-    
-    setCurrentMeasure(null);
-    setIsPlaying(false);
   };
   
   const handleStop = () => {
+    stopRequestedRef.current = true;
     setIsPlaying(false);
     setCurrentMeasure(null);
   };
@@ -155,7 +164,7 @@ export default function SolfaDisplay({
               >
                 {isPlaying ? (
                   <>
-                    <Pause className="w-4 h-4" /> Stop
+                    <Square className="w-4 h-4" /> Stop
                   </>
                 ) : (
                   <>
