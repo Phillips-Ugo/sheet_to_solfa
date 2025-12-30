@@ -95,23 +95,31 @@ class GeminiOMREngine(OMREngine):
 
     def _create_prompt(self) -> str:
         """Create the prompt for Gemini to analyze sheet music."""
-        return """Analyze this sheet music image and extract ALL musical notes for conversion to tonic solfa.
+        return """You are an expert musicologist analyzing sheet music. Extract ALL musical notes with maximum accuracy.
 
-IMPORTANT: Focus on extracting the MELODY LINE (typically the highest voice/treble clef). 
-For piano scores with multiple staves, extract ONLY the top staff/treble clef notes.
+CRITICAL INSTRUCTIONS:
+1. Extract the MELODY LINE only (treble clef/top staff). For piano scores, use ONLY the top staff.
+2. Read from LEFT TO RIGHT, measure by measure, ensuring you don't skip any notes.
+3. Pay careful attention to note positions on the staff - use ledger lines to determine octaves correctly.
+4. Count beats carefully - each measure should total the correct number of beats per the time signature.
+5. Distinguish between similar-looking notes (e.g., B vs D, E vs G) by their exact staff positions.
 
-Please identify:
-1. The key signature (e.g., C major, G major, D minor, etc.)
-2. The time signature (e.g., 4/4, 3/4, 6/8)  
-3. All melody notes in order from left to right, measure by measure
+Extract:
+- KEY SIGNATURE: Identify from the key signature symbols (e.g., "C major", "G major", "D minor", "A minor")
+- TIME SIGNATURE: Read from the time signature (e.g., "4/4", "3/4", "2/4", "6/8")
+- MEASURES: Process each measure separately, maintaining correct beat counts
 
-For each note provide:
-- pitch: Single letter (C, D, E, F, G, A, B) - do NOT include accidentals in pitch
-- accidental: "sharp", "flat", or null (for natural notes or key signature accidentals)
-- octave: Number using scientific pitch (middle C = C4)
-- duration: "whole", "half", "quarter", "eighth", or "sixteenth"
+For EACH NOTE, provide:
+- pitch: Base note letter only (C, D, E, F, G, A, B) - NO accidentals in pitch field
+- accidental: "sharp", "flat", or null (only if the note has an explicit accidental that differs from key signature)
+- octave: Use scientific pitch notation (middle C = C4, C above middle C = C5, C below = C3)
+- duration: "whole", "half", "quarter", "eighth", "sixteenth" (be precise - distinguish eighth from quarter notes)
 
-Return ONLY a JSON object with this EXACT structure:
+For RESTS:
+- Use: {"rest": true, "duration": "quarter"} format
+- Count rest durations accurately to maintain measure beat totals
+
+Return ONLY valid JSON with this EXACT structure:
 ```json
 {
   "key": "G major",
@@ -130,11 +138,13 @@ Return ONLY a JSON object with this EXACT structure:
 }
 ```
 
-RULES:
-- Use "notes" array (NOT "treble_notes" or "bass_notes")
-- For rests use: {"rest": true, "duration": "quarter"}
-- Include accidentals that are NOT part of the key signature
-- Be thorough - include every single note in the melody"""
+STRICT RULES:
+- Use "notes" array only (NEVER "treble_notes" or "bass_notes")
+- Every measure must contain notes that sum to the correct number of beats
+- Include EVERY note - do not skip any, even if they repeat
+- Double-check octave numbers by counting ledger lines and staff positions carefully
+- Verify that each measure's total duration matches the time signature
+- If uncertain about a note, examine surrounding notes for context clues"""
 
     def _parse_gemini_response(self, response_text: str) -> dict | None:
         """Parse Gemini's response to extract JSON data."""

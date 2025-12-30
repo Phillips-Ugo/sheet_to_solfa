@@ -128,7 +128,16 @@ class SheetMusicProcessor:
                 )
                 
                 output_path = processed_dir / f"processed_{page_path.name}"
-                result = self.preprocessor.preprocess(page_path, output_path)
+                # Use lighter preprocessing for Gemini (preserves more detail)
+                # Gemini Vision works better with grayscale than binary thresholded images
+                if settings.gemini_api_key:
+                    result = self.preprocessor.preprocess_for_gemini(page_path, output_path)
+                else:
+                    result = self.preprocessor.preprocess(
+                        page_path, 
+                        output_path,
+                        apply_contrast=True,
+                    )
                 processed_images.append(result.processed_path)
 
             # Stage 3: OMR Processing (30-60%)
