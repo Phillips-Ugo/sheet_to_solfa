@@ -384,25 +384,21 @@ STRICT RULES:
             prompt = self._create_prompt()
             
             logger.info("Sending request to Gemini API...")
-            try:
-                import time
-                start_time = time.time()
-                
-                # Generate content with retry logic for timeouts
-                response = self._model.generate_content([
-                    prompt,
-                    image_part,
-                ])
-                
-                elapsed = time.time() - start_time
-                logger.info(f"Gemini API responded in {elapsed:.2f} seconds")
+            import time
+            start_time = time.time()
+            
+            # Generate content - this may take 10-30 seconds for complex sheet music
+            response = self._model.generate_content([
+                prompt,
+                image_part,
+            ])
+            
+            elapsed = time.time() - start_time
+            logger.info(f"Gemini API responded in {elapsed:.2f} seconds")
 
-                # Parse the response
-                response_text = response.text
-                logger.info(f"Gemini response length: {len(response_text)} chars")
-            except Exception as api_error:
-                logger.error(f"Gemini API call failed: {api_error}")
-                raise
+            # Parse the response
+            response_text = response.text
+            logger.info(f"Gemini response length: {len(response_text)} chars")
             
             # Ensure output directory exists before saving
             output_dir.mkdir(parents=True, exist_ok=True)
