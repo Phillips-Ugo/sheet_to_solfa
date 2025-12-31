@@ -384,3 +384,4 @@ class SymbolicParser:
         else:
             raise ValueError(f"Unsupported file format: {suffix}")
 
+

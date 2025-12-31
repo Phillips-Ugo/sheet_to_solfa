@@ -103,3 +103,4 @@ async def get_text_result(job_id: str):
         "measure_count": result.get("measure_count", 0),
     }
 
+

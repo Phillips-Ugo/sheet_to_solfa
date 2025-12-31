@@ -191,48 +191,6 @@ class ImagePreprocessor:
         clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
         return clahe.apply(gray)
 
-    def preprocess_for_gemini(
-        self,
-        input_path: Path,
-        output_path: Path,
-    ) -> PreprocessingResult:
-        """
-        Light preprocessing optimized for Gemini Vision.
-        Gemini works better with grayscale/color images rather than binary thresholded.
-        """
-        image = cv2.imread(str(input_path))
-        if image is None:
-            raise ValueError(f"Could not load image: {input_path}")
-        
-        original_size = (image.shape[1], image.shape[0])
-        
-        # Convert to grayscale
-        processed = self.to_grayscale(image)
-        
-        # Apply contrast enhancement (helps Gemini see details better)
-        processed = self.enhance_contrast(processed)
-        
-        # Light deskewing only (don't want to lose quality)
-        processed, rotation_angle = self.deskew(processed)
-        was_deskewed = abs(rotation_angle) >= 0.1
-        
-        processed_size = (processed.shape[1], processed.shape[0])
-        
-        # Save as grayscale (not binary thresholded)
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        cv2.imwrite(str(output_path), processed)
-        
-        logger.info(f"Preprocessed for Gemini: {input_path.name} -> {output_path.name}")
-        
-        return PreprocessingResult(
-            original_path=input_path,
-            processed_path=output_path,
-            was_deskewed=was_deskewed,
-            rotation_angle=rotation_angle,
-            original_size=original_size,
-            processed_size=processed_size,
-        )
-
     def preprocess(
         self,
         input_path: Path,

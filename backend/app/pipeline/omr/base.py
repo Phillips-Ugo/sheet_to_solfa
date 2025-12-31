@@ -102,3 +102,4 @@ class OMREngine(ABC):
         valid_extensions = {".png", ".jpg", ".jpeg", ".tiff", ".tif", ".bmp"}
         return image_path.suffix.lower() in valid_extensions
 
+

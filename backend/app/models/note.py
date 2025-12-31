@@ -96,3 +96,4 @@ class RestEvent:
 # Type alias for any music event
 MusicElement = Union[NoteEvent, RestEvent]
 
+

@@ -54,3 +54,4 @@ class JobResult(BaseModel):
     note_count: int
     available_formats: list[str] = ["txt", "json", "pdf"]
 
+

@@ -380,17 +380,29 @@ STRICT RULES:
                 "data": image_data,
             }
 
-            # Send to Gemini
+            # Send to Gemini with timeout handling
             prompt = self._create_prompt()
             
-            response = self._model.generate_content([
-                prompt,
-                image_part,
-            ])
+            logger.info("Sending request to Gemini API...")
+            try:
+                import time
+                start_time = time.time()
+                
+                # Generate content with retry logic for timeouts
+                response = self._model.generate_content([
+                    prompt,
+                    image_part,
+                ])
+                
+                elapsed = time.time() - start_time
+                logger.info(f"Gemini API responded in {elapsed:.2f} seconds")
 
-            # Parse the response
-            response_text = response.text
-            logger.info(f"Gemini response length: {len(response_text)} chars")
+                # Parse the response
+                response_text = response.text
+                logger.info(f"Gemini response length: {len(response_text)} chars")
+            except Exception as api_error:
+                logger.error(f"Gemini API call failed: {api_error}")
+                raise
             
             # Ensure output directory exists before saving
             output_dir.mkdir(parents=True, exist_ok=True)

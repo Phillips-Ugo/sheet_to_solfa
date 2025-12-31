@@ -329,3 +329,4 @@ class MusicTheoryEngine:
         """Get the parallel major/minor of a key."""
         return music_key.parallel
 
+
